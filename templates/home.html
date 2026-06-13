@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Progress Tracker</title>
+</head>
+<body>
+<h1>GitHub Progress Tracker</h1>
+
+<h2>Generate Summary CSV</h2>
+<form action="{{ url_for('summary') }}" method="post">
+    <label for="count">Number of students (leave empty for all):</label>
+    <input type="number" name="count" id="count" min="1">
+    <button type="submit">Generate Summary CSV</button>
+</form>
+
+<h2>Generate PDF for a single student</h2>
+<form action="{{ url_for('student_pdf') }}" method="post">
+    <label for="regno">Enter Registration Number:</label>
+    <input type="text" name="regno" id="regno" required>
+    <button type="submit">Generate PDF</button>
+</form>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+            <li style="color:red">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+</body>
+</html>
