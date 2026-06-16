@@ -13,6 +13,10 @@
     <a href="{{ url_for('dashboard') }}">
         Open Dashboard
     </a>
+    <a href="/student/24b01a1211"
+   class="btn btn-success">
+    Open Student Analytics
+</a>
 </p>
 
 <h2>Generate Summary CSV</h2>
@@ -21,6 +25,20 @@
     <input type="number" name="count" id="count" min="1">
     <button type="submit">Generate Summary CSV</button>
 </form>
+<div class="mt-4">
+
+    <form action="/excel" method="post">
+
+        <button
+            class="btn btn-success">
+
+            Export Excel Report (.xlsx)
+
+        </button>
+
+    </form>
+
+</div>
 
 <h2>Generate PDF for a single student</h2>
 <form action="{{ url_for('student_pdf') }}" method="post">

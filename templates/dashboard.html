@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>GitHub Activity Dashboard</title>
 
@@ -54,19 +55,22 @@
         <div class="col-md-3">
             <div class="card shadow">
                 <div class="card-body text-center">
-                    <h5>Top Contributor</h5>
-                    <h6>{{ most_active_student }}</h6>
+                    <h5>🏆 Top Contributor</h5>
+
+                    <h4 class="text-success">
+                        {{ most_active_student }}
+                    </h4>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Leaderboard Table -->
+    <!-- Leaderboard -->
     <div class="card mt-4 shadow">
 
         <div class="card-header bg-primary text-white">
-            Top Contributors
+            🏆 Top Contributors
         </div>
 
         <div class="card-body">
@@ -84,11 +88,33 @@
                 <tbody>
 
                 {% for student in leaderboard %}
-                <tr>
-                    <td>{{ loop.index }}</td>
+
+                <tr
+                {% if loop.index == 1 %}
+                style="background-color:#fff3cd;font-weight:bold;"
+                {% endif %}
+                >
+
+                    <td>
+
+                        {% if loop.index == 1 %}
+                        🥇
+                        {% elif loop.index == 2 %}
+                        🥈
+                        {% elif loop.index == 3 %}
+                        🥉
+                        {% endif %}
+
+                        {{ loop.index }}
+
+                    </td>
+
                     <td>{{ student.username }}</td>
+
                     <td>{{ student.commits }}</td>
+
                 </tr>
+
                 {% endfor %}
 
                 </tbody>
@@ -99,7 +125,7 @@
 
     </div>
 
-    <!-- Analytics Chart -->
+    <!-- Chart -->
     <div class="card mt-4 shadow">
 
         <div class="card-header bg-success text-white">
@@ -117,15 +143,15 @@
 <script>
 
 const labels = [
-    {% for student in top_students %}
-        "{{ student.username }}",
-    {% endfor %}
+{% for student in top_students %}
+"{{ student.username }}",
+{% endfor %}
 ];
 
 const commits = [
-    {% for student in top_students %}
-        {{ student.commits }},
-    {% endfor %}
+{% for student in top_students %}
+{{ student.commits }},
+{% endfor %}
 ];
 
 new Chart(
@@ -135,6 +161,7 @@ new Chart(
 
         data: {
             labels: labels,
+
             datasets: [{
                 label: 'Total Commits',
                 data: commits

@@ -2,9 +2,9 @@ import os
 from dotenv import load_dotenv
 import requests
 from time import sleep
+
 load_dotenv()
 
-# Paste your GitHub Personal Access Token here
 TOKEN = os.getenv("GITHUB_TOKEN")
 
 HEADERS = {
@@ -12,9 +12,27 @@ HEADERS = {
 }
 
 
+def fetch_profile(username):
+    """
+    Fetch GitHub profile information.
+    """
+    url = f"https://api.github.com/users/{username}"
+
+    response = requests.get(
+        url,
+        headers=HEADERS,
+        timeout=10
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
 def fetch_github_data_for_user(username, max_retries=3):
     """
     Fetch GitHub repositories and commit information for a user.
+
     Returns:
     {
         "repos": [
@@ -38,6 +56,7 @@ def fetch_github_data_for_user(username, max_retries=3):
                 )
 
                 response.raise_for_status()
+
                 return response.json()
 
             except requests.exceptions.RequestException as e:
