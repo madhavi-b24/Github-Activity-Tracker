@@ -63,5 +63,62 @@ def student_pdf():
         flash(f"Error generating PDF: {e}", "danger")
         return redirect(url_for("home"))
 
+
+@app.route("/dashboard")
+def dashboard():
+    students = load_students()
+
+    total_students = len(students)
+    total_repos = 0
+    total_commits = 0
+
+    most_active_student = "N/A"
+    max_commits = 0
+
+    leaderboard = []
+
+    for regno, username in students.items():
+        try:
+            data = fetch_github_data_for_user(username)
+            repos = data.get("repos", [])
+
+            commits = sum(
+                repo.get("commits_count", 0)
+                for repo in repos
+            )
+
+            total_repos += len(repos)
+            total_commits += commits
+
+            leaderboard.append({
+                "username": username,
+                "commits": commits
+            })
+
+            if commits > max_commits:
+                max_commits = commits
+                most_active_student = username
+
+        except Exception as e:
+            print(f"Error fetching data for {username}: {e}")
+
+    leaderboard = sorted(
+        leaderboard,
+        key=lambda x: x["commits"],
+        reverse=True
+    )
+
+    top_students = leaderboard[:5]
+
+    return render_template(
+        "dashboard.html",
+        total_students=total_students,
+        total_repos=total_repos,
+        total_commits=total_commits,
+        most_active_student=most_active_student,
+        leaderboard=leaderboard,
+        top_students=top_students
+    )
+
 if __name__ == "__main__":
     app.run(debug=True)
