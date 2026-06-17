@@ -54,7 +54,16 @@ Top Contributors
 
 <tr>
 
-<td>{{ loop.index }}</td>
+<td>
+{% if loop.index == 1 %}
+<span class="badge bg-warning text-dark">Gold</span>
+{% elif loop.index == 2 %}
+<span class="badge bg-secondary">Silver</span>
+{% elif loop.index == 3 %}
+<span class="badge" style="background-color:#cd7f32;">Bronze</span>
+{% endif %}
+{{ loop.index }}
+</td>
 
 <td>{{ student.regno }}</td>
 
@@ -75,6 +84,10 @@ Top Contributors
 </div>
 
 </div>
+
+<footer class="bg-dark text-white text-center py-3 mt-5">
+GitHub Student Analytics Platform &copy; 2026
+</footer>
 
 </body>
 </html>

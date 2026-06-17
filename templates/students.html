@@ -23,6 +23,16 @@
 
 <div class="container mt-4">
 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} mb-3" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
     <input
         type="text"
         id="searchInput"
@@ -84,6 +94,10 @@
     </div>
 
 </div>
+
+<footer class="bg-dark text-white text-center py-3 mt-5">
+    GitHub Student Analytics Platform &copy; 2026
+</footer>
 
 <script>
 

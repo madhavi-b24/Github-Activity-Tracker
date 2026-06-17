@@ -2,107 +2,378 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GitHub Progress Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Student Analytics Platform</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --primary-blue: #0d6efd;
+            --deep-blue: #0b3d91;
+            --page-bg: #f4f7fb;
+            --navbar-bg: #101828;
+            --text-muted: #667085;
+        }
+
+        body {
+            background: var(--page-bg);
+            color: #1f2937;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .navbar {
+            background: var(--navbar-bg);
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: var(--primary-blue);
+            color: #fff;
+        }
+
+        .hero-section {
+            background:
+                linear-gradient(135deg, rgba(13, 110, 253, 0.94), rgba(11, 61, 145, 0.96)),
+                radial-gradient(circle at top right, rgba(255, 255, 255, 0.22), transparent 30%);
+            color: #fff;
+            padding: 72px 0 64px;
+        }
+
+        .hero-section p {
+            max-width: 720px;
+            color: rgba(255, 255, 255, 0.86);
+        }
+
+        .section-wrap {
+            margin-top: -36px;
+            padding-bottom: 56px;
+        }
+
+        .feature-card {
+            height: 100%;
+            border: 0;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 18px 38px rgba(16, 24, 40, 0.14);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(13, 110, 253, 0.1);
+            color: var(--primary-blue);
+            font-size: 1.45rem;
+        }
+
+        .card-text {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            color: #344054;
+            font-weight: 600;
+        }
+
+        .alert-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .footer {
+            background: var(--navbar-bg);
+            color: #fff;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-section {
+                padding: 56px 0 52px;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .section-wrap {
+                margin-top: -24px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<h1>GitHub Progress Tracker</h1>
-
-<!-- Add this button here -->
-<p>
-    <a href="{{ url_for('dashboard') }}">
-        Open Dashboard
-    </a>
-    <a href="/student/24b01a1211"
-   class="btn btn-success">
-    Open Student Analytics
-</a>
-<br><br>
-<a
-href="/students"
-class="btn btn-dark">
-
-View Students
-
-</a>
-</p>
-
-<h2>Generate Summary CSV</h2>
-<form action="{{ url_for('summary') }}" method="post">
-    <label for="count">Number of students (leave empty for all):</label>
-    <input type="number" name="count" id="count" min="1">
-    <button type="submit">Generate Summary CSV</button>
-</form>
-<div class="mt-4">
-
-    <form action="/excel" method="post">
-
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="{{ url_for('dashboard') }}">
+            <span class="brand-mark">
+                <i class="bi bi-github"></i>
+            </span>
+            <span>GitHub Student Analytics Platform</span>
+        </a>
         <button
-            class="btn btn-success">
-
-            Export Excel Report (.xlsx)
-
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
         </button>
-
-    </form>
-    <div class="card mt-4 shadow">
-
-    <div class="card-header bg-primary text-white">
-        🔍 Search Student Analytics
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a class="nav-link" href="/students">Students</a>
+                <a class="nav-link" href="/leaderboard">Leaderboard</a>
+            </div>
+        </div>
     </div>
+</nav>
 
-    <div class="card-body">
-
-        <form action="/search_student" method="POST">
-
-            <label class="form-label">
-                Enter Registration Number
-            </label>
-
-            <input
-                type="text"
-                name="regno"
-                class="form-control"
-                placeholder="24b01a1211"
-                required
-            >
-
-            <button
-                type="submit"
-                class="btn btn-primary mt-3">
-
-                View Analytics
-
-            </button>
-            <a href="/leaderboard" class="btn btn-warning">
-🏆 Leaderboard
-</a>
-
-
-        </form>
-
+<header class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-9">
+                <div class="d-inline-flex align-items-center gap-2 mb-3 px-3 py-2 rounded-2 bg-white bg-opacity-10">
+                    <i class="bi bi-activity"></i>
+                    <span class="small fw-semibold">GitHub Progress Tracker</span>
+                </div>
+                <h1 class="display-5 fw-bold mb-3">GitHub Student Analytics Platform</h1>
+                <p class="lead mb-0">
+                    Track GitHub contributions, student performance, repository activity and leaderboard rankings.
+                </p>
+            </div>
+        </div>
     </div>
+</header>
 
-</div>
+<main class="section-wrap">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-sm-6 col-xl-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h2 class="h6 fw-bold mb-2">Total Students</h2>
+                        <div class="display-6 fw-bold text-primary">{{ total_students|default(0) }}</div>
+                    </div>
+                </div>
+            </div>
 
-</div>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-folder2-open"></i>
+                        </div>
+                        <h2 class="h6 fw-bold mb-2">Total Repositories</h2>
+                        <div class="display-6 fw-bold text-primary">{{ total_repos|default(0) }}</div>
+                    </div>
+                </div>
+            </div>
 
-<h2>Generate PDF for a single student</h2>
-<form action="{{ url_for('student_pdf') }}" method="post">
-    <label for="regno">Enter Registration Number:</label>
-    <input type="text" name="regno" id="regno" required>
-    <button type="submit">Generate PDF</button>
-</form>
+            <div class="col-sm-6 col-xl-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-git"></i>
+                        </div>
+                        <h2 class="h6 fw-bold mb-2">Total Commits</h2>
+                        <div class="display-6 fw-bold text-primary">{{ total_commits|default(0) }}</div>
+                    </div>
+                </div>
+            </div>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <ul>
-        {% for category, message in messages %}
-            <li style="color:red">{{ message }}</li>
-        {% endfor %}
-        </ul>
-    {% endif %}
-{% endwith %}
+            <div class="col-sm-6 col-xl-3">
+                <div class="card feature-card">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <h2 class="h6 fw-bold mb-2">Total Stars</h2>
+                        <div class="display-6 fw-bold text-primary">{{ total_stars|default(0) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert">
+                    <ul class="alert-list">
+                        {% for category, message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Student Analytics</h2>
+                        <p class="card-text mb-4">View detailed GitHub analytics for a student.</p>
+                        <form action="/search_student" method="POST">
+                            <label class="form-label" for="analytics-regno">Registration Number</label>
+                            <input
+                                type="text"
+                                name="regno"
+                                id="analytics-regno"
+                                class="form-control mb-3"
+                                placeholder="24b01a1211"
+                                required
+                            >
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-box-arrow-up-right me-1"></i>
+                                Open Analytics
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Student Directory</h2>
+                        <p class="card-text mb-4">Browse all registered students.</p>
+                        <a href="/students" class="btn btn-primary w-100 mt-auto">
+                            <i class="bi bi-list-ul me-1"></i>
+                            View Students
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Leaderboard</h2>
+                        <p class="card-text mb-4">See top contributors ranked by commits.</p>
+                        <a href="/leaderboard" class="btn btn-primary w-100 mt-auto">
+                            <i class="bi bi-bar-chart-fill me-1"></i>
+                            Open Leaderboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Export Excel</h2>
+                        <p class="card-text mb-4">Download Excel reports.</p>
+                        <form action="/excel" method="post" class="mt-auto">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-download me-1"></i>
+                                Export
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Generate PDF</h2>
+                        <p class="card-text mb-4">Download individual student reports.</p>
+                        <form action="{{ url_for('student_pdf') }}" method="post">
+                            <label class="form-label" for="pdf-regno">Registration Number</label>
+                            <input
+                                type="text"
+                                name="regno"
+                                id="pdf-regno"
+                                class="form-control mb-3"
+                                placeholder="24b01a1211"
+                                required
+                            >
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-filetype-pdf me-1"></i>
+                                Generate PDF
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-xl-4">
+                <div class="card feature-card">
+                    <div class="card-body p-4">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-filetype-csv"></i>
+                        </div>
+                        <h2 class="h5 fw-bold mb-2">Summary CSV</h2>
+                        <p class="card-text mb-4">Generate contribution summaries.</p>
+                        <form action="{{ url_for('summary') }}" method="post">
+                            <label class="form-label" for="count">Number of students</label>
+                            <input
+                                type="number"
+                                name="count"
+                                id="count"
+                                class="form-control mb-3"
+                                min="1"
+                                placeholder="Leave empty for all"
+                            >
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-file-earmark-arrow-down me-1"></i>
+                                Generate CSV
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer text-center py-3 mt-5">
+    GitHub Student Analytics Platform &copy; 2026
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

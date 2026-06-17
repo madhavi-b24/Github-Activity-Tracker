@@ -3,19 +3,120 @@ from students.student_manager import load_students, get_username_by_regno, gener
 from github_api.github_fetcher import (
     fetch_github_data_for_user,
     fetch_profile,
-    get_monthly_contributions
+    get_monthly_contributions,
+    sort_repos_by_last_commit,
+    sort_repos_by_updated_at
 )
 from reports.pdf_report import generate_student_pdf
 from reports.excel_report import generate_excel_report
 from pathlib import Path
+import logging
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 REPORTS_DIR = Path("reports")
+logger = logging.getLogger(__name__)
+
+def _sum_repo_values(repos, key):
+    return sum(repo.get(key, 0) for repo in repos)
+
+
+def _active_repositories(repos):
+    return [
+        repo for repo in repos
+        if not repo.get("archived")
+        and not repo.get("empty")
+        and repo.get("last_commit_date") != "N/A"
+    ]
+
+
+def _top_repositories_by_commits(repos, limit=5):
+    return sorted(
+        repos,
+        key=lambda repo: repo.get("commits_count", 0),
+        reverse=True
+    )[:limit]
+
+
+def _find_student_matches(query, students):
+    normalized_query = (query or "").strip().lower()
+
+    if not normalized_query:
+        return []
+
+    exact_matches = [
+        (regno, username)
+        for regno, username in students.items()
+        if regno.lower() == normalized_query
+        or username.lower() == normalized_query
+    ]
+
+    if exact_matches:
+        return exact_matches
+
+    return [
+        (regno, username)
+        for regno, username in students.items()
+        if normalized_query in regno.lower()
+        or normalized_query in username.lower()
+    ]
+
+
+def _student_repo_summary(regno, username):
+    data = fetch_github_data_for_user(username)
+    repos = data.get("repos", [])
+    total_commits = _sum_repo_values(repos, "commits_count")
+
+    return {
+        "regno": regno,
+        "username": username,
+        "repos": repos,
+        "repos_count": len(repos),
+        "total_commits": total_commits,
+        "analytics": data.get("analytics", {})
+    }
+
+
+def _platform_statistics(students):
+    stats = {
+        "total_students": len(students),
+        "total_repos": 0,
+        "total_commits": 0,
+        "total_stars": 0
+    }
+
+    for username in students.values():
+        try:
+            data = fetch_github_data_for_user(username)
+            repos = data.get("repos", [])
+            analytics = data.get("analytics", {})
+
+            stats["total_repos"] += len(repos)
+            stats["total_commits"] += _sum_repo_values(repos, "commits_count")
+            stats["total_stars"] += analytics.get(
+                "total_stars",
+                _sum_repo_values(repos, "stars")
+            )
+
+        except Exception as e:
+            logger.warning(
+                "Error fetching platform statistics for %s: %s",
+                username,
+                e
+            )
+
+    return stats
+
 
 @app.route("/")
 def home():
-    return render_template("home.html")
+    students = load_students()
+    stats = _platform_statistics(students)
+
+    return render_template(
+        "home.html",
+        **stats
+    )
 
 @app.route("/summary", methods=["POST"])
 def summary():
@@ -32,15 +133,12 @@ def summary():
 
     for regno, username in selected_students.items():
         try:
-            data = fetch_github_data_for_user(username)
-            profile=fetch_profile(username)
-            repos = data.get("repos", [])
-            total_commits = sum(r.get("commits_count", 0) for r in repos)
+            summary = _student_repo_summary(regno, username)
             all_data.append({
                 "regno": regno,
                 "username": username,
-                "repos_count": len(repos),
-                "total_commits": total_commits
+                "repos_count": summary["repos_count"],
+                "total_commits": summary["total_commits"]
             })
         except Exception as e:
             print(f"⚠️ Error fetching {username}: {e}")
@@ -85,15 +183,10 @@ def dashboard():
 
     for regno, username in students.items():
         try:
-            data = fetch_github_data_for_user(username)
-            repos = data.get("repos", [])
+            summary = _student_repo_summary(regno, username)
+            commits = summary["total_commits"]
 
-            commits = sum(
-                repo.get("commits_count", 0)
-                for repo in repos
-            )
-
-            total_repos += len(repos)
+            total_repos += summary["repos_count"]
             total_commits += commits
 
             leaderboard.append({
@@ -106,7 +199,7 @@ def dashboard():
                 most_active_student = username
 
         except Exception as e:
-            print(f"Error fetching data for {username}: {e}")
+            logger.warning("Error fetching dashboard data for %s: %s", username, e)
 
     leaderboard = sorted(
         leaderboard,
@@ -152,9 +245,9 @@ def student_analytics(regno):
         profile = fetch_profile(username)
 
         repos = data.get("repos", [])
-        monthly_contributions = get_monthly_contributions(
-    repos
-    )
+        monthly_contributions = dict(sorted(
+            get_monthly_contributions(repos).items()
+        ))
         print(monthly_contributions)
 
         months = list(
@@ -167,22 +260,27 @@ def student_analytics(regno):
 
         total_repos = len(repos)
 
-        total_commits = sum(
-            repo.get("commits_count", 0)
-            for repo in repos
-        )
+        total_commits = _sum_repo_values(repos, "commits_count")
 
+        repo_analytics = data.get("analytics", {})
+        language_distribution = repo_analytics.get(
+            "language_distribution",
+            {}
+        )
+        top_language = repo_analytics.get("top_language", "N/A")
+
+        active_candidates = _active_repositories(repos)
         most_active_repo = "N/A"
 
-        if repos:
+        if active_candidates:
             most_active_repo = max(
-                repos,
+                active_candidates,
                 key=lambda r: r.get("commits_count", 0)
             )["name"]
 
-        recent_repos = sorted( repos,
-          key=lambda x: x.get("updated_at", ""),
-    reverse=True)[:5]
+        active_repos = sort_repos_by_last_commit(active_candidates)[:5]
+        recent_repos = sort_repos_by_updated_at(repos)[:5]
+        top_repositories = _top_repositories_by_commits(repos)
 
         return render_template(
             "student_analytics.html",
@@ -190,11 +288,37 @@ def student_analytics(regno):
             username=username,
             total_repos=total_repos,
             total_commits=total_commits,
+            total_stars=repo_analytics.get(
+                "total_stars",
+                _sum_repo_values(repos, "stars")
+            ),
+            total_forks=repo_analytics.get(
+                "total_forks",
+                _sum_repo_values(repos, "forks")
+            ),
+            archived_repos=repo_analytics.get("archived_repos", 0),
+            active_repo_count=repo_analytics.get(
+                "active_repo_count",
+                len(active_candidates)
+            ),
+            most_starred_repo=repo_analytics.get("most_starred_repo", "N/A"),
+            most_forked_repo=repo_analytics.get("most_forked_repo", "N/A"),
             most_active_repo=most_active_repo,
+            top_language=top_language,
+            active_repos=active_repos,
             recent_repos=recent_repos,
+            top_repositories=top_repositories,
+            latest_commits=repo_analytics.get("latest_commits", []),
+            latest_repository_updates=repo_analytics.get(
+                "latest_repository_updates",
+                []
+            ),
+            recent_activities=repo_analytics.get("recent_activities", []),
             profile=profile,
             months=months,
             month_commits=month_commits,
+            language_labels=list(language_distribution.keys()),
+            language_values=list(language_distribution.values()),
             repos=repos
         )
 
@@ -216,9 +340,18 @@ def students():
 @app.route("/repository/<username>/<repo_name>")
 def repository_details(username, repo_name):
 
-    data = fetch_github_data_for_user(username)
-
-    repos = data.get("repos", [])
+    try:
+        data = fetch_github_data_for_user(username)
+        repos = data.get("repos", [])
+    except Exception as e:
+        logger.warning(
+            "Error fetching repository details for %s/%s: %s",
+            username,
+            repo_name,
+            e
+        )
+        flash("Unable to load repository details right now.")
+        return redirect(url_for("home"))
 
     selected_repo = None
 
@@ -254,14 +387,8 @@ def leaderboard():
 
         try:
 
-            data = fetch_github_data_for_user(username)
-
-            repos = data.get("repos", [])
-
-            commits = sum(
-                repo.get("commits_count", 0)
-                for repo in repos
-            )
+            summary = _student_repo_summary(regno, username)
+            commits = summary["total_commits"]
 
             rankings.append({
                 "regno": regno,
@@ -271,7 +398,7 @@ def leaderboard():
 
         except Exception as e:
 
-            print(e)
+            logger.warning("Error fetching leaderboard data for %s: %s", username, e)
 
     rankings = sorted(
         rankings,
@@ -295,24 +422,17 @@ def excel_report():
 
         try:
 
-            data = fetch_github_data_for_user(username)
-
-            repos = data.get("repos", [])
-
-            total_commits = sum(
-                repo.get("commits_count", 0)
-                for repo in repos
-            )
+            summary = _student_repo_summary(regno, username)
 
             all_data.append({
                 "regno": regno,
                 "username": username,
-                "repos_count": len(repos),
-                "total_commits": total_commits
+                "repos_count": summary["repos_count"],
+                "total_commits": summary["total_commits"]
             })
 
         except Exception as e:
-            print(e)
+            logger.warning("Error fetching Excel data for %s: %s", username, e)
 
     file_path = generate_excel_report(all_data)
 
@@ -323,13 +443,33 @@ def excel_report():
 @app.route("/search_student", methods=["POST"])
 def search_student():
 
-    regno = request.form.get("regno")
+    query = request.form.get("regno")
+    students = load_students()
+    matches = _find_student_matches(query, students)
+
+    if len(matches) == 1:
+        regno, username = matches[0]
+        return redirect(
+            url_for(
+                "student_analytics",
+                regno=regno
+            )
+        )
+
+    if len(matches) > 1:
+        flash(
+            f"Multiple students matched '{query}'. Please refine your search.",
+            "warning"
+        )
+        return redirect(url_for("students"))
+
+    flash(
+        f"No student found matching '{query}'",
+        "danger"
+    )
 
     return redirect(
-        url_for(
-            "student_analytics",
-            regno=regno
-        )
+        url_for("home")
     )
 
 if __name__ == "__main__":

@@ -8,6 +8,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -146,6 +149,107 @@
 
     </div>
 
+    <!-- Stars and Forks Analytics -->
+    <div class="row mt-4">
+
+        <div class="col-md-3">
+
+            <div class="card shadow">
+
+                <div class="card-body text-center">
+
+                    <h5><i class="bi bi-star-fill text-warning"></i> Total Stars</h5>
+
+                    <h2>{{ total_stars }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow">
+
+                <div class="card-body text-center">
+
+                    <h5><i class="bi bi-diagram-2-fill text-primary"></i> Total Forks</h5>
+
+                    <h2>{{ total_forks }}</h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow">
+
+                <div class="card-body text-center">
+
+                    <h5><i class="bi bi-trophy-fill text-success"></i> Most Starred Repository</h5>
+
+                    <h6 class="mb-0">{{ most_starred_repo }}</h6>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <div class="card shadow">
+
+                <div class="card-body text-center">
+
+                    <h5><i class="bi bi-shuffle text-info"></i> Most Forked Repository</h5>
+
+                    <h6 class="mb-0">{{ most_forked_repo }}</h6>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Analytics Summary -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-primary text-white">
+            Analytics Summary
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <p><strong>Total Repositories:</strong> {{ total_repos }}</p>
+                    <p><strong>Total Commits:</strong> {{ total_commits }}</p>
+                </div>
+
+                <div class="col-md-4">
+                    <p><strong>Total Stars:</strong> {{ total_stars }}</p>
+                    <p><strong>Total Forks:</strong> {{ total_forks }}</p>
+                </div>
+
+                <div class="col-md-4">
+                    <p><strong>Most Active Repository:</strong> {{ most_active_repo }}</p>
+                    <p><strong>Top Language:</strong> {{ top_language }}</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <!-- Most Active Repository -->
     <div class="card mt-4 shadow">
 
@@ -187,7 +291,7 @@
 
             <ul class="list-group">
 
-                {% for repo in recent_repos %}
+                {% for repo in active_repos %}
 
                 <li class="list-group-item">
 
@@ -209,6 +313,160 @@
 
     </div>
 
+    <!-- Top Repositories -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-success text-white">
+            Top 5 Repositories by Commits
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-striped">
+
+                <thead>
+                    <tr>
+                        <th>Repository Name</th>
+                        <th>Commit Count</th>
+                        <th>Last Updated Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for repo in top_repositories %}
+
+                <tr>
+                    <td>
+                        <a href="/repository/{{ username }}/{{ repo.name }}">
+                            {{ repo.name }}
+                        </a>
+                    </td>
+                    <td>{{ repo.commits_count }}</td>
+                    <td>{{ repo.updated_at }}</td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Repositories -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-info text-white">
+            Recent Repositories
+        </div>
+
+        <div class="card-body">
+
+            <ul class="list-group">
+
+                {% for repo in recent_repos %}
+
+                <li class="list-group-item">
+
+    <a href="/repository/{{ username }}/{{ repo.name }}">
+
+        {{ repo.name }}
+
+    </a>
+
+    (Updated: {{ repo.updated_at }})
+
+</li>
+
+                {% endfor %}
+
+            </ul>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Activity Feed -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-secondary text-white">
+            Recent Activity Feed
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+                    <h5>Latest Commits</h5>
+                    <ul class="list-group">
+                        {% for activity in latest_commits %}
+                        <li class="list-group-item">
+                            <strong>{{ activity.repo }}</strong><br>
+                            {% if activity.url %}
+                            <a href="{{ activity.url }}" target="_blank">{{ activity.title }}</a>
+                            {% else %}
+                            {{ activity.title }}
+                            {% endif %}
+                            <br>
+                            <small>{{ activity.date }}</small>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item">No commit activity available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Latest Repository Updates</h5>
+                    <ul class="list-group">
+                        {% for activity in latest_repository_updates %}
+                        <li class="list-group-item">
+                            <strong>{{ activity.repo }}</strong><br>
+                            {% if activity.url %}
+                            <a href="{{ activity.url }}" target="_blank">{{ activity.title }}</a>
+                            {% else %}
+                            {{ activity.title }}
+                            {% endif %}
+                            <br>
+                            <small>{{ activity.date }}</small>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item">No repository updates available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="col-md-4">
+                    <h5>Last 5 GitHub Activities</h5>
+                    <ul class="list-group">
+                        {% for activity in recent_activities %}
+                        <li class="list-group-item">
+                            <span class="badge bg-dark">{{ activity.type }}</span>
+                            <strong>{{ activity.repo }}</strong><br>
+                            {% if activity.url %}
+                            <a href="{{ activity.url }}" target="_blank">{{ activity.title }}</a>
+                            {% else %}
+                            {{ activity.title }}
+                            {% endif %}
+                            <br>
+                            <small>{{ activity.date }}</small>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item">No recent activity available.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
     <!-- Contribution Activity -->
     <div class="card mt-4 shadow">
 
@@ -224,7 +482,31 @@
 
     </div>
 
+    <!-- Programming Language Distribution -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-primary text-white">
+            Programming Language Distribution
+        </div>
+
+        <div class="card-body">
+
+            <p>
+                <strong>Top Language:</strong>
+                {{ top_language }}
+            </p>
+
+            <canvas id="languageChart" height="120"></canvas>
+
+        </div>
+
+    </div>
+
 </div>
+
+<footer class="bg-dark text-white text-center py-3 mt-5">
+    GitHub Student Analytics Platform &copy; 2026
+</footer>
 
 <!-- Repo Chart -->
 
@@ -307,6 +589,49 @@ beginAtZero:true
 
 }
 
+}
+
+});
+
+</script>
+
+<!-- Programming Language Chart -->
+
+<script>
+
+const languageLabels = {{ language_labels|tojson }};
+const languageValues = {{ language_values|tojson }};
+
+new Chart(
+document.getElementById('languageChart'),
+{
+type:'pie',
+
+data:{
+labels:languageLabels,
+
+datasets:[{
+data:languageValues,
+backgroundColor:[
+'#0d6efd',
+'#198754',
+'#ffc107',
+'#fd7e14',
+'#20c997',
+'#6f42c1',
+'#0dcaf0',
+'#6c757d'
+]
+}]
+},
+
+options:{
+responsive:true,
+plugins:{
+legend:{
+position:'bottom'
+}
+}
 }
 
 });
