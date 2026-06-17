@@ -191,10 +191,15 @@
 
                 <li class="list-group-item">
 
-                    {{ repo.name }}
-                    ({{ repo.commits_count }} commits)
+    <a href="/repository/{{ username }}/{{ repo.name }}">
 
-                </li>
+        {{ repo.name }}
+
+    </a>
+
+    ({{ repo.commits_count }} commits)
+
+</li>
 
                 {% endfor %}
 

@@ -201,7 +201,38 @@ def student_analytics(regno):
     except Exception as e:
 
         flash(str(e), "danger")
+ 
         return redirect(url_for("home"))
+    
+    
+@app.route("/repository/<username>/<repo_name>")
+def repository_details(username, repo_name):
+
+    data = fetch_github_data_for_user(username)
+
+    repos = data.get("repos", [])
+
+    selected_repo = None
+
+    for repo in repos:
+
+        if repo["name"] == repo_name:
+
+            selected_repo = repo
+
+            break
+
+    if not selected_repo:
+
+        flash("Repository not found")
+
+        return redirect(url_for("home"))
+
+    return render_template(
+        "repository_details.html",
+        repo=selected_repo,
+        username=username
+    )
 
 @app.route("/excel", methods=["POST"])
 def excel_report():

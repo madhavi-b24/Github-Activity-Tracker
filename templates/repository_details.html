@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Repository Details</title>
+
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet">
+
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark">
+
+    <div class="container">
+
+        <span class="navbar-brand">
+
+            Repository Details
+
+        </span>
+
+    </div>
+
+</nav>
+
+<div class="container mt-4">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            Repository Information
+
+        </div>
+
+        <div class="card-body">
+
+            <h3>{{ repo.name }}</h3>
+
+            <hr>
+
+            <p>
+
+                <strong>Total Commits:</strong>
+
+                {{ repo.commits_count }}
+
+            </p>
+
+            <p>
+
+                <strong>Last Commit Date:</strong>
+
+                {{ repo.last_commit_date }}
+
+            </p>
+
+            <p>
+
+                <strong>Repository URL:</strong>
+
+                <a
+                href="{{ repo.url }}"
+                target="_blank">
+
+                    Open Repository
+
+                </a>
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
