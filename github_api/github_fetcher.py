@@ -77,6 +77,11 @@ def fetch_github_data_for_user(username, max_retries=3):
 
         repo_name = repo["name"]
         repo_url = repo["html_url"]
+        language = repo.get("language", "N/A")
+
+        stars = repo.get("stargazers_count", 0)
+
+        forks = repo.get("forks_count", 0)
 
         updated_at = repo.get(
             "updated_at",
@@ -107,14 +112,16 @@ def fetch_github_data_for_user(username, max_retries=3):
             last_commit_date = "N/A"
 
         result.append(
-            {
-                "name": repo_name,
-                "commits_count": commits_count,
-                "last_commit_date": last_commit_date,
-                "updated_at": updated_at,
-                "url": repo_url,
-            }
-        )
+{
+    "name": repo_name,
+    "commits_count": commits_count,
+    "last_commit_date": last_commit_date,
+    "url": repo_url,
+    "language": language,
+    "stars": stars,
+    "forks": forks
+}
+)
 
     return {
         "repos": result

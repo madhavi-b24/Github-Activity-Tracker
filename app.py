@@ -204,7 +204,15 @@ def student_analytics(regno):
  
         return redirect(url_for("home"))
     
-    
+@app.route("/students")
+def students():
+
+    students_data = load_students()
+
+    return render_template(
+        "students.html",
+        students=students_data
+    )
 @app.route("/repository/<username>/<repo_name>")
 def repository_details(username, repo_name):
 
