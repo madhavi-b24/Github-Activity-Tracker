@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import requests
 from time import sleep
+from collections import defaultdict
 
 load_dotenv()
 
@@ -16,6 +17,7 @@ def fetch_profile(username):
     """
     Fetch GitHub profile information.
     """
+
     url = f"https://api.github.com/users/{username}"
 
     response = requests.get(
@@ -31,24 +33,15 @@ def fetch_profile(username):
 
 def fetch_github_data_for_user(username, max_retries=3):
     """
-    Fetch GitHub repositories and commit information for a user.
-
-    Returns:
-    {
-        "repos": [
-            {
-                "name": "...",
-                "commits_count": ...,
-                "last_commit_date": "...",
-                "url": "..."
-            }
-        ]
-    }
+    Fetch GitHub repositories and commit information.
     """
 
     def get_json(url):
+
         for attempt in range(max_retries):
+
             try:
+
                 response = requests.get(
                     url,
                     headers=HEADERS,
@@ -60,16 +53,17 @@ def fetch_github_data_for_user(username, max_retries=3):
                 return response.json()
 
             except requests.exceptions.RequestException as e:
+
                 print(
                     f"⚠ API request failed ({attempt+1}/{max_retries}): {e}"
                 )
+
                 sleep(2)
 
         raise Exception(
             f"Failed to fetch {url} after {max_retries} attempts"
         )
 
-    # Fetch all repositories
     repos_data = get_json(
         f"https://api.github.com/users/{username}/repos?per_page=100"
     )
@@ -84,7 +78,13 @@ def fetch_github_data_for_user(username, max_retries=3):
         repo_name = repo["name"]
         repo_url = repo["html_url"]
 
+        updated_at = repo.get(
+            "updated_at",
+            "N/A"
+        )
+
         try:
+
             commits_list = get_json(
                 f"https://api.github.com/repos/{username}/{repo_name}/commits?per_page=100"
             )
@@ -98,6 +98,7 @@ def fetch_github_data_for_user(username, max_retries=3):
             )
 
         except Exception as e:
+
             print(
                 f"Skipping commit fetch for {repo_name}: {e}"
             )
@@ -110,8 +111,34 @@ def fetch_github_data_for_user(username, max_retries=3):
                 "name": repo_name,
                 "commits_count": commits_count,
                 "last_commit_date": last_commit_date,
+                "updated_at": updated_at,
                 "url": repo_url,
             }
         )
 
-    return {"repos": result}
+    return {
+        "repos": result
+    }
+
+
+def get_monthly_contributions(repos):
+
+    monthly_data = defaultdict(int)
+
+    for repo in repos:
+
+        date = repo.get(
+            "last_commit_date",
+            ""
+        )
+
+        if date and date != "N/A":
+
+            month = date[:7]
+
+            monthly_data[month] += repo.get(
+                "commits_count",
+                0
+            )
+
+    return dict(monthly_data)

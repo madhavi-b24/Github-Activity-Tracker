@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, send_file, flash, redirect, u
 from students.student_manager import load_students, get_username_by_regno, generate_summary_csv
 from github_api.github_fetcher import (
     fetch_github_data_for_user,
-    fetch_profile
+    fetch_profile,
+    get_monthly_contributions
 )
 from reports.pdf_report import generate_student_pdf
 from reports.excel_report import generate_excel_report
@@ -151,6 +152,18 @@ def student_analytics(regno):
         profile = fetch_profile(username)
 
         repos = data.get("repos", [])
+        monthly_contributions = get_monthly_contributions(
+    repos
+    )
+        print(monthly_contributions)
+
+        months = list(
+    monthly_contributions.keys()
+     )
+
+        month_commits = list(
+    monthly_contributions.values()
+    )
 
         total_repos = len(repos)
 
@@ -167,7 +180,9 @@ def student_analytics(regno):
                 key=lambda r: r.get("commits_count", 0)
             )["name"]
 
-        recent_repos = repos[:5]
+        recent_repos = sorted( repos,
+          key=lambda x: x.get("updated_at", ""),
+    reverse=True)[:5]
 
         return render_template(
             "student_analytics.html",
@@ -177,7 +192,10 @@ def student_analytics(regno):
             total_commits=total_commits,
             most_active_repo=most_active_repo,
             recent_repos=recent_repos,
-            profile=profile
+            profile=profile,
+            months=months,
+            month_commits=month_commits,
+            repos=repos
         )
 
     except Exception as e:

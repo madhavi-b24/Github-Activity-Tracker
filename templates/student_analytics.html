@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
     <title>Student Analytics</title>
 
-    <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
@@ -14,16 +16,15 @@
 
 <nav class="navbar navbar-dark bg-dark">
     <div class="container">
-
         <span class="navbar-brand">
             Student Analytics
         </span>
-
     </div>
 </nav>
 
 <div class="container mt-4">
 
+    <!-- Student Information -->
     <div class="card shadow">
 
         <div class="card-header bg-primary text-white">
@@ -43,6 +44,7 @@
 
     </div>
 
+    <!-- Statistics -->
     <div class="row mt-4">
 
         <div class="col-md-6">
@@ -79,48 +81,44 @@
 
     </div>
 
+    <!-- GitHub Profile -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-info text-white">
+            GitHub Profile Insights
+        </div>
+
+        <div class="card-body">
+
+            <p>
+                <strong>Followers:</strong>
+                {{ profile.followers }}
+            </p>
+
+            <p>
+                <strong>Following:</strong>
+                {{ profile.following }}
+            </p>
+
+            <p>
+                <strong>Public Repositories:</strong>
+                {{ profile.public_repos }}
+            </p>
+
+            <p>
+                <strong>Account Created:</strong>
+                {{ profile.created_at }}
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Most Active Repository -->
     <div class="card mt-4 shadow">
 
         <div class="card-header bg-success text-white">
-
             Most Active Repository
-            <div class="card mt-4">
-
-    <div class="card-header bg-info text-white">
-        GitHub Profile Insights
-    </div>
-
-    <div class="card-body">
-
-        <p>
-            <strong>Followers:</strong>
-            {{ profile.followers }}
-        </p>
-
-        <p>
-            <strong>Following:</strong>
-            {{ profile.following }}
-        </p>
-
-        <p>
-            <strong>Public Repositories:</strong>
-            {{ profile.public_repos }}
-        </p>
-
-        <p>
-            <strong>Account Created:</strong>
-            {{ profile.created_at }}
-        </p>
-
-    </div>
-
-</div>
-
-    <div class="card-body">
-        <canvas id="repoChart"></canvas>
-    </div>
-</div>
-
         </div>
 
         <div class="card-body">
@@ -131,12 +129,26 @@
 
     </div>
 
+    <!-- Repository Chart -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-warning text-dark">
+            Repository Commit Analysis
+        </div>
+
+        <div class="card-body">
+
+            <canvas id="repoChart"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Repositories -->
     <div class="card mt-4 shadow">
 
         <div class="card-header bg-info text-white">
-
-            Recent Repositories
-
+            🔥 Currently Active Repositories
         </div>
 
         <div class="card-body">
@@ -160,17 +172,34 @@
 
     </div>
 
+    <!-- Contribution Activity -->
+    <div class="card mt-4 shadow">
+
+        <div class="card-header bg-dark text-white">
+            Contribution Activity
+        </div>
+
+        <div class="card-body">
+
+            <canvas id="heatmapChart" height="120"></canvas>
+
+        </div>
+
+    </div>
+
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Repo Chart -->
+
 <script>
 
-const labels = [
+const repoLabels = [
 {% for repo in repos %}
 "{{ repo.name }}",
 {% endfor %}
 ];
 
-const commits = [
+const repoCommits = [
 {% for repo in repos %}
 {{ repo.commits_count }},
 {% endfor %}
@@ -182,15 +211,71 @@ document.getElementById('repoChart'),
 type:'bar',
 
 data:{
-labels:labels,
+labels:repoLabels,
 
 datasets:[{
 label:'Commits',
-data:commits
+data:repoCommits
 }]
+},
+
+options:{
+responsive:true,
+scales:{
+y:{
+beginAtZero:true
 }
+}
+}
+
 });
 
 </script>
+
+<!-- Monthly Contribution Chart -->
+
+<script>
+
+const months = {{ months|tojson }};
+const monthCommits = {{ month_commits|tojson }};
+
+new Chart(
+document.getElementById('heatmapChart'),
+{
+type:'bar',
+
+data:{
+
+labels:months,
+
+datasets:[{
+
+label:'Monthly Contributions',
+
+data:monthCommits
+
+}]
+
+},
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+beginAtZero:true
+}
+
+}
+
+}
+
+});
+
+</script>
+
 </body>
+
 </html>
