@@ -239,6 +239,17 @@ def excel_report():
         file_path,
         as_attachment=True
     )
+@app.route("/search_student", methods=["POST"])
+def search_student():
+
+    regno = request.form.get("regno")
+
+    return redirect(
+        url_for(
+            "student_analytics",
+            regno=regno
+        )
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)
