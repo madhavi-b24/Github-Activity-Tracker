@@ -242,6 +242,48 @@ def repository_details(username, repo_name):
         username=username
     )
 
+
+@app.route("/leaderboard")
+def leaderboard():
+
+    students = load_students()
+
+    rankings = []
+
+    for regno, username in students.items():
+
+        try:
+
+            data = fetch_github_data_for_user(username)
+
+            repos = data.get("repos", [])
+
+            commits = sum(
+                repo.get("commits_count", 0)
+                for repo in repos
+            )
+
+            rankings.append({
+                "regno": regno,
+                "username": username,
+                "commits": commits
+            })
+
+        except Exception as e:
+
+            print(e)
+
+    rankings = sorted(
+        rankings,
+        key=lambda x: x["commits"],
+        reverse=True
+    )
+
+    return render_template(
+        "leaderboard.html",
+        rankings=rankings
+    )
+
 @app.route("/excel", methods=["POST"])
 def excel_report():
 
